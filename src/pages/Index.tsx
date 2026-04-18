@@ -1,18 +1,23 @@
 import { useState, useEffect } from 'react';
-import BottomNav from '@/components/BottomNav';
+import BottomNav, { Tab } from '@/components/BottomNav';
 import HomePage from '@/pages/HomePage';
 import PracticePage from '@/pages/PracticePage';
 import OfflinePage from '@/pages/OfflinePage';
 import ProfilePage from '@/pages/ProfilePage';
+import LevelsPage from '@/pages/LevelsPage';
+import LestorePage from '@/pages/LestorePage';
 import AuthPage from '@/pages/AuthPage';
+import ReminderPopup from '@/components/ReminderPopup';
 import { getMe, logout, User } from '@/lib/api';
 
-type Tab = 'home' | 'practice' | 'offline' | 'profile';
+const REMINDER_KEY = 'last_reminder_shown';
+const REMINDER_INTERVAL_MS = 3 * 60 * 60 * 1000; // 3 hours
 
 export default function Index() {
   const [activeTab, setActiveTab] = useState<Tab>('home');
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [showReminder, setShowReminder] = useState(false);
 
   useEffect(() => {
     getMe().then(u => {
@@ -21,9 +26,31 @@ export default function Index() {
     });
   }, []);
 
+  // Show reminder after delay if user is logged in
+  useEffect(() => {
+    if (!user) return;
+    const last = parseInt(localStorage.getItem(REMINDER_KEY) || '0');
+    const now = Date.now();
+    const delay = now - last > REMINDER_INTERVAL_MS ? 8000 : 0; // 8 sec on fresh, skip if recent
+    if (now - last < REMINDER_INTERVAL_MS) return;
+    const timer = setTimeout(() => setShowReminder(true), delay);
+    return () => clearTimeout(timer);
+  }, [user]);
+
   const handleLogout = async () => {
     await logout();
     setUser(null);
+  };
+
+  const handleReminderClose = () => {
+    localStorage.setItem(REMINDER_KEY, String(Date.now()));
+    setShowReminder(false);
+  };
+
+  const handleReminderStudy = () => {
+    localStorage.setItem(REMINDER_KEY, String(Date.now()));
+    setShowReminder(false);
+    setActiveTab('practice');
   };
 
   if (authLoading) {
@@ -45,7 +72,8 @@ export default function Index() {
     switch (activeTab) {
       case 'home': return <HomePage user={user} />;
       case 'practice': return <PracticePage />;
-      case 'offline': return <OfflinePage />;
+      case 'levels': return <LevelsPage />;
+      case 'lestore': return <LestorePage />;
       case 'profile': return <ProfilePage user={user} onLogout={handleLogout} />;
     }
   };
@@ -56,6 +84,12 @@ export default function Index() {
         {renderPage()}
       </div>
       <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
+      {showReminder && (
+        <ReminderPopup
+          onClose={handleReminderClose}
+          onStudy={handleReminderStudy}
+        />
+      )}
     </div>
   );
 }
