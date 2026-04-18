@@ -1,14 +1,30 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from 'react';
+import BottomNav from '@/components/BottomNav';
+import HomePage from '@/pages/HomePage';
+import PracticePage from '@/pages/PracticePage';
+import OfflinePage from '@/pages/OfflinePage';
+import ProfilePage from '@/pages/ProfilePage';
 
-const Index = () => {
+type Tab = 'home' | 'practice' | 'offline' | 'profile';
+
+export default function Index() {
+  const [activeTab, setActiveTab] = useState<Tab>('home');
+
+  const renderPage = () => {
+    switch (activeTab) {
+      case 'home': return <HomePage />;
+      case 'practice': return <PracticePage />;
+      case 'offline': return <OfflinePage />;
+      case 'profile': return <ProfilePage />;
+    }
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4 color-black text-black">Добро пожаловать!</h1>
-        <p className="text-xl text-gray-600">тут будет отображаться ваш проект</p>
+    <div className="min-h-screen bg-background font-nunito">
+      <div key={activeTab} className="animate-fade-in">
+        {renderPage()}
       </div>
+      <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
     </div>
   );
-};
-
-export default Index;
+}
