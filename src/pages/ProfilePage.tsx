@@ -1,10 +1,16 @@
 import { useState } from 'react';
 import Icon from '@/components/ui/icon';
+import { User } from '@/lib/api';
 
-const stats = [
+interface ProfilePageProps {
+  user: User;
+  onLogout: () => void;
+}
+
+const buildStats = (u: User) => [
   { emoji: '📚', value: '47', label: 'Уроков' },
-  { emoji: '⚡', value: '3 240', label: 'XP всего' },
-  { emoji: '🔥', value: '7', label: 'Дней подряд' },
+  { emoji: '⚡', value: u.xp.toLocaleString('ru'), label: 'XP всего' },
+  { emoji: '🔥', value: String(u.streak), label: 'Дней подряд' },
   { emoji: '🏆', value: '12', label: 'Достижений' },
 ];
 
@@ -22,9 +28,9 @@ const achievements = [
 
 type Section = 'stats' | 'settings';
 
-export default function ProfilePage() {
+export default function ProfilePage({ user, onLogout }: ProfilePageProps) {
   const [section, setSection] = useState<Section>('stats');
-  const [name, setName] = useState('Алексей Смирнов');
+  const [name, setName] = useState(user.name);
   const [dailyGoal, setDailyGoal] = useState(20);
   const [notifications, setNotifications] = useState(true);
   const [soundEffects, setSoundEffects] = useState(true);
@@ -32,9 +38,9 @@ export default function ProfilePage() {
   const [editingName, setEditingName] = useState(false);
   const [tempName, setTempName] = useState(name);
 
-  const level = 12;
-  const xpCurrent = 3240;
-  const xpNext = 3500;
+  const level = user.level;
+  const xpCurrent = user.xp;
+  const xpNext = level * 300;
   const xpPct = Math.round((xpCurrent / xpNext) * 100);
 
   const saveName = () => {
@@ -111,7 +117,7 @@ export default function ProfilePage() {
         <>
           {/* Stats grid */}
           <div className="grid grid-cols-4 gap-2 animate-fade-in stagger-2">
-            {stats.map((s, i) => (
+            {buildStats(user).map((s, i) => (
               <div key={i} className="game-card p-3 text-center">
                 <span className="text-xl">{s.emoji}</span>
                 <p className="font-black text-sm text-foreground leading-tight mt-0.5">{s.value}</p>
@@ -238,7 +244,10 @@ export default function ProfilePage() {
             ))}
           </div>
 
-          <button className="w-full py-3 rounded-2xl border-2 border-red-200 text-red-500 font-black text-sm hover:bg-red-50 transition-colors">
+          <button
+            onClick={onLogout}
+            className="w-full py-3 rounded-2xl border-2 border-red-200 text-red-500 font-black text-sm hover:bg-red-50 transition-colors"
+          >
             🚪 Выйти из аккаунта
           </button>
         </div>

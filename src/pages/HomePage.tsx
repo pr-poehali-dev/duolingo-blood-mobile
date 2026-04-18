@@ -1,4 +1,9 @@
 import { useState } from 'react';
+import { User } from '@/lib/api';
+
+interface HomePageProps {
+  user: User;
+}
 
 const dailyGoalProgress = 65;
 
@@ -43,8 +48,8 @@ const achievements = [
   { emoji: '🌟', label: 'Перфекционист', unlocked: false },
 ];
 
-export default function HomePage() {
-  const [streak] = useState(7);
+export default function HomePage({ user }: HomePageProps) {
+  const [streak] = useState(user.streak || 7);
 
   return (
     <div className="pb-24 pt-4 px-4 max-w-lg mx-auto space-y-6">
@@ -52,7 +57,7 @@ export default function HomePage() {
       <div className="flex items-center justify-between animate-fade-in">
         <div>
           <p className="text-sm text-muted-foreground font-semibold">Добро пожаловать 👋</p>
-          <h1 className="text-2xl font-black text-foreground">Привет, Алекс!</h1>
+          <h1 className="text-2xl font-black text-foreground">Привет, {user.name.split(' ')[0]}!</h1>
         </div>
         <div className="flex items-center gap-2 bg-orange-50 border-2 border-orange-200 rounded-2xl px-3 py-2">
           <span className="text-xl animate-fire">🔥</span>
